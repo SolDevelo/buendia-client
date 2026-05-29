@@ -74,7 +74,18 @@ public class PropertyManager implements IPropertyManager {
         mProperties = new HashMap<String, String>();
         mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
 
-        String deviceId = mTelephonyManager.getDeviceId();
+        // On Android 10+ (API 29+), TelephonyManager.getDeviceId() requires
+        // READ_PRIVILEGED_PHONE_STATE (only granted to system apps). Calling
+        // it from a regular app throws SecurityException, crashing the app
+        // on launch. Fall back to a null deviceId on failure — the code
+        // below already handles the null case (uses ANDROID_ID / Wi-Fi MAC).
+        String deviceId;
+        try {
+            deviceId = mTelephonyManager.getDeviceId();
+        } catch (SecurityException e) {
+            Log.w(t, "getDeviceId() denied (Android 10+ restriction); falling back to ANDROID_ID");
+            deviceId = null;
+        }
         String orDeviceId = null;
         if (deviceId != null ) {
         	if ((deviceId.contains("*") || deviceId.contains("000000000000000"))) {
@@ -113,20 +124,35 @@ public class PropertyManager implements IPropertyManager {
 
         String value;
 
-        value = mTelephonyManager.getSubscriberId();
-        if ( value != null ) {
-        	mProperties.put(SUBSCRIBER_ID_PROPERTY, value);
-        	mProperties.put(OR_SUBSCRIBER_ID_PROPERTY, "imsi:" + value);
+        // Android 10+ restricts getSubscriberId / getSimSerialNumber /
+        // getLine1Number to privileged apps. Wrap each call so that
+        // a denied permission silently leaves the property unset.
+        try {
+            value = mTelephonyManager.getSubscriberId();
+            if ( value != null ) {
+                mProperties.put(SUBSCRIBER_ID_PROPERTY, value);
+                mProperties.put(OR_SUBSCRIBER_ID_PROPERTY, "imsi:" + value);
+            }
+        } catch (SecurityException e) {
+            Log.w(t, "getSubscriberId() denied; skipping IMSI property");
         }
-        value = mTelephonyManager.getSimSerialNumber();
-        if ( value != null ) {
-        	mProperties.put(SIM_SERIAL_PROPERTY, value);
-        	mProperties.put(OR_SIM_SERIAL_PROPERTY, "simserial:" + value);
+        try {
+            value = mTelephonyManager.getSimSerialNumber();
+            if ( value != null ) {
+                mProperties.put(SIM_SERIAL_PROPERTY, value);
+                mProperties.put(OR_SIM_SERIAL_PROPERTY, "simserial:" + value);
+            }
+        } catch (SecurityException e) {
+            Log.w(t, "getSimSerialNumber() denied; skipping SIM serial property");
         }
-        value = mTelephonyManager.getLine1Number();
-        if ( value != null ) {
-        	mProperties.put(PHONE_NUMBER_PROPERTY, value);
-        	mProperties.put(OR_PHONE_NUMBER_PROPERTY, "tel:" + value);
+        try {
+            value = mTelephonyManager.getLine1Number();
+            if ( value != null ) {
+                mProperties.put(PHONE_NUMBER_PROPERTY, value);
+                mProperties.put(OR_PHONE_NUMBER_PROPERTY, "tel:" + value);
+            }
+        } catch (SecurityException e) {
+            Log.w(t, "getLine1Number() denied; skipping phone-number property");
         }
 
         // Get the username from the settings

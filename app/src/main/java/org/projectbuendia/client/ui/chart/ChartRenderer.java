@@ -145,30 +145,32 @@ public class ChartRenderer {
 
         LOG.elapsed("render", "HTML generated");
 
-        // Record the scroll position of the viewport in the document so we can restore it.
-        mView.evaluateJavascript("getScrollPosition()", (value) -> {
-            value = value.replace('"', ' ').trim();
-            String scrollJs = "<script>setScrollPosition('" + value + "');</script>";
-            LOG.i("scrollJs = %s", Utils.repr(scrollJs));
+        // NOTE: original implementation wrapped the loadDataWithBaseURL call
+        // inside an evaluateJavascript("getScrollPosition()") callback to
+        // preserve scroll position across renders. On KitKat (API 19) the
+        // callback frequently never fires for the first chart load (no
+        // chart.js is available yet to evaluate against), and so the chart
+        // HTML never reaches the WebView. The trade-off: we lose scroll
+        // restoration but the chart actually displays.
+        String scrollJs = "";
 
-            // To avoid showing stale, possibly misleading data from a previous
-            // patient, clear out any previous chart HTML before showing the WebView.
-            mView.loadUrl("about:blank");
-            mView.clearView();
-            mView.setVisibility(View.VISIBLE);
-            mView.loadDataWithBaseURL(
-                "file:///android_asset/", html + scrollJs, "text/html; charset=utf-8", "utf-8", null);
-            mView.setWebContentsDebuggingEnabled(true);
+        // To avoid showing stale, possibly misleading data from a previous
+        // patient, clear out any previous chart HTML before showing the WebView.
+        mView.loadUrl("about:blank");
+        mView.clearView();
+        mView.setVisibility(View.VISIBLE);
+        mView.loadDataWithBaseURL(
+            "file:///android_asset/", html + scrollJs, "text/html; charset=utf-8", "utf-8", null);
+        mView.setWebContentsDebuggingEnabled(true);
 
-            LOG.finish("render", "HTML loaded into WebView");
+        LOG.finish("render", "HTML loaded into WebView");
 
-            mLastChartName = chart.name;
-            mLastRenderedZoomIndex = mSettings.getChartZoomIndex();
-            mLastRenderedObs = observations;
-            mLastRenderedOrders = orders;
+        mLastChartName = chart.name;
+        mLastRenderedZoomIndex = mSettings.getChartZoomIndex();
+        mLastRenderedObs = observations;
+        mLastRenderedOrders = orders;
 
-            LOG.start("ChartJS");
-        });
+        LOG.start("ChartJS");
     }
 
     /** Gets the starting times (in ms) of the segments into which the day is divided. */

@@ -18,9 +18,12 @@ buildscript {
     }
 }
 
-plugins {
-    id 'org.ajoberstar.grgit' version '3.1.1'
-}
+// grgit 3.1.1 was JCenter-exclusive and is now unreachable. We only used it
+// to derive a versionString from the git HEAD; just hard-code a placeholder
+// instead. Real release builds override versionString via -PversionNumber.
+// plugins {
+//     id 'org.ajoberstar.grgit' version '3.1.1'
+// }
 
 apply plugin: 'com.android.application'
 def appId = 'org.projectbuendia.client'
@@ -108,9 +111,11 @@ tasks['spoon'].outputs.upToDateWhen { false }
 def versionInteger = 0
 
 // Development builds get a version name that identifies the commit.
+// (Originally derived from Grgit; replaced with a placeholder since
+// grgit 3.1.1 is no longer reachable. Release builds set versionString
+// from -PversionNumber below.)
 def appName = 'Buendia dev'
-def repo = org.ajoberstar.grgit.Grgit.open(dir: project.rootDir)
-def versionString = repo.head().id.substring(0, 7) + (repo.status().clean ? '' : '+')
+def versionString = 'dev'
 
 // For a release build, use -PversionNumber=1.2.3 to set the version number.
 // It should have at most three parts, all numeric (e.g. 1, 1.2, or 1.2.3).
@@ -220,7 +225,11 @@ android {
     defaultConfig {
         applicationId appId
         minSdkVersion 19
-        targetSdkVersion 22
+        // Bumped from 22 → 24 so Android 14+ (API 34+) will accept the
+        // install. 24 is the minimum target; behavior changes from 22 to 24
+        // are minor and likely don't affect Buendia. If we go higher (26+)
+        // we'd hit background-execution limits and need scoped-storage work.
+        targetSdkVersion 24
         multiDexEnabled true
 
         versionCode versionInteger

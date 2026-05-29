@@ -11,8 +11,14 @@
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         google()
+        // JCenter shut down in May 2021. bintray's URL returns 404 for many
+        // artifacts, but Aliyun keeps a read-only mirror that still serves
+        // the old content (e.g. com.google.android:flexbox:1.0.0,
+        // various 1.x support libs, etc.).
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.1'
@@ -21,7 +27,13 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
         google()
+        // JCenter shut down in May 2021. bintray's URL returns 404 for many
+        // artifacts, but Aliyun keeps a read-only mirror that still serves
+        // the old content (e.g. com.google.android:flexbox:1.0.0,
+        // various 1.x support libs, etc.).
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+        jcenter()
     }
 }

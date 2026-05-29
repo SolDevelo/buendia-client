@@ -18,6 +18,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
+import android.support.multidex.MultiDex;
 
 import com.android.volley.VolleyLog;
 import com.facebook.stetho.Stetho;
@@ -52,6 +53,15 @@ import de.greenrobot.event.EventBus;
 /** An {@link Application} the represents the Android Client. */
 public class App extends Application {
     private static final Logger LOG = Logger.create();
+
+    // On pre-Lollipop (KitKat = API 19), the Dalvik VM only loads classes.dex
+    // automatically. This app's method count pushes BuendiaProvider (and many
+    // other classes) into classes2.dex; without this install() call they
+    // would be reported as ClassNotFoundException at first reference.
+    @Override protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
 
     // Global instances of all our singletons.
     private static App sInstance;

@@ -9,6 +9,20 @@
 // OR CONDITIONS OF ANY KIND, either express or implied.  See the License for
 // specific language governing permissions and limitations under the License.
 
+// The `plugins { id '...' }` DSL only resolves transitive plugin deps from
+// the repositories declared here. The gradle plugin portal alone doesn't
+// host grgit-core:3.1.1 (only the marker artifact), so add Maven Central.
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        google()
+        // Aliyun's read-only JCenter mirror — covers JCenter-exclusive
+        // artifacts that bintray no longer serves.
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+    }
+}
+
 include ':app'
 include ':third_party:odkcollect'
 include ':third_party:AutoFitTextView'
