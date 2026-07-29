@@ -30,6 +30,7 @@ import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 import org.joda.time.Duration;
 import org.projectbuendia.client.App;
 import org.projectbuendia.client.AppSettings;
+import org.projectbuendia.client.BuildConfig;
 import org.projectbuendia.client.R;
 import org.projectbuendia.client.events.actions.PatientChartRequestedEvent;
 import org.projectbuendia.client.events.user.ActiveUserUnsetEvent;
@@ -49,8 +50,12 @@ import static org.projectbuendia.client.utils.Utils.eq;
 /** A {@link BaseActivity} that requires that there currently be a logged-in user. */
 public abstract class LoggedInActivity extends BaseActivity {
     private static final Logger LOG = Logger.create();
-    private static final Duration UNDOCKED_AUTOLOGOUT_IDLE_DURATION = Duration.standardMinutes(10);
-    private static final Duration DOCKED_AUTOLOGOUT_IDLE_DURATION = Duration.standardSeconds(30);
+    // Configured at build time (-PidleLogoutSeconds / -PdockedIdleLogoutSeconds); see the
+    // comment on the defaults in app/build.gradle for why the docked limit is not 30 s.
+    private static final Duration UNDOCKED_AUTOLOGOUT_IDLE_DURATION =
+        Duration.standardSeconds(BuildConfig.IDLE_LOGOUT_SECONDS);
+    private static final Duration DOCKED_AUTOLOGOUT_IDLE_DURATION =
+        Duration.standardSeconds(BuildConfig.DOCKED_IDLE_LOGOUT_SECONDS);
 
     private JsonUser mLastActiveUser;
     private Menu mMenu;

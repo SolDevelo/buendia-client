@@ -171,6 +171,17 @@ def smallSyncIntervalDefault = 10  // for syncs that take less than 100 ms
 def mediumSyncIntervalDefault = 30  // for syncs that take up to 500 ms
 def largeSyncIntervalDefault = 120  // for syncs that take up to 2000 ms
 
+// Idle time before the app auto-logs-out back to the provider-picker (LoginActivity).
+// Two limits, because a tablet sitting on a shared charging station is assumed to be
+// unattended, and a stale session there would mis-attribute the next user's data entry.
+//
+// NB "docked" is inferred from AC charging (see BatteryWatcher), not from a real dock
+// event, so this shorter limit also applies to a tablet that is simply plugged in while
+// in use. The upstream default of 30 s made an in-use, charging tablet log out mid-task,
+// so it is configurable here and defaults to something usable in a ward.
+def idleLogoutSecondsDefault = 600  // 10 min, on battery
+def dockedIdleLogoutSecondsDefault = 300  // 5 min, while AC-charging
+
 // Just for development.  In production builds, these should be overridden
 // using -Pserver=server -PopenmrsUser=user -PopenmrsPassword=pass etc.
 def serverDefault = serverLan
@@ -193,6 +204,9 @@ def apkCheckInterval = project.findProperty('apkCheckInterval') ?: apkCheckInter
 def smallSyncInterval = project.findProperty('smallSyncInterval') ?: smallSyncIntervalDefault
 def mediumSyncInterval = project.findProperty('mediumSyncInterval') ?: mediumSyncIntervalDefault
 def largeSyncInterval = project.findProperty('largeSyncInterval') ?: largeSyncIntervalDefault
+def idleLogoutSeconds = project.findProperty('idleLogoutSeconds') ?: idleLogoutSecondsDefault
+def dockedIdleLogoutSeconds =
+    project.findProperty('dockedIdleLogoutSeconds') ?: dockedIdleLogoutSecondsDefault
 def startingPatientId = project.findProperty('startingPatientId') ?: ''
 def periodicSyncDisabled = project.findProperty('periodicSyncDisabled') ?: false
 def formInstancesRetained = project.findProperty('formInstancesRetained') ?: false
@@ -266,6 +280,10 @@ android {
 
         // Set the SQLite database encryption password.
         buildConfigField 'String', 'ENCRYPTION_PASSWORD', '"' + encryptionPassword + '"'
+
+        // Auto-logout idle limits, read by LoggedInActivity.onTick().
+        buildConfigField 'int', 'IDLE_LOGOUT_SECONDS', '' + idleLogoutSeconds
+        buildConfigField 'int', 'DOCKED_IDLE_LOGOUT_SECONDS', '' + dockedIdleLogoutSeconds
     }
 
     signingConfigs {
