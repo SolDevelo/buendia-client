@@ -1,0 +1,364 @@
+#!/usr/bin/env python3
+
+"""Generates MsfCatalog.java from an explicit list of catalogue items.
+
+Unlike get_meds, which surveys a whole MSF standard list and keeps the rows it
+recognizes, this takes the exact list of items that should reach the tablet and
+emits every one of them.  Anything it cannot place is a hard error naming the
+offending row; nothing is ever skipped silently.
+
+    build_catalog catalog.csv [target.java ...]
+
+Input columns (only `code` and `desc_en` are required):
+
+    code       MSF stock code; becomes the Format code.  Its first 4 characters
+               select the category and its first 8 are the Drug code, because
+               CatalogIndex.getDrug() recovers a drug by truncating to 8.
+    desc_en    MSF description, e.g. "AMOXICILLIN, 500 mg, tab."  A "^" marks
+    desc_fr    where the drug name ends and the format begins; without one the
+               name is the leading words the drug's formats have in common.
+    drug_en    Sugar for writing the "^" by hand: given a drug name, its words
+    drug_fr    are removed from the description and the rest is the format.
+    format_en  Used with drug_en to state both halves outright.
+    format_fr
+    unit       Unit constant, e.g. SACHET, or "null" for a format that takes no
+               dose.  Blank guesses from the description, as get_meds does.
+    note       Ignored; for humans.
+"""
+
+import csv
+import difflib
+import os
+import re
+import sys
+
+# Category per code prefix, in the order they appear in the generated index.
+# Several prefixes may share a category (DEXT and DEXO are both external).
+# The order dialog's category buttons are hardcoded in code and layout
+# (OrderDialogFragment.onOpen, order_dialog_fragment.xml), so this list is not
+# free to change: every category here must have a button, and every category
+# the dialog names must exist even when the catalogue has no items for it.
+#
+# That is also why MSF items whose stock family has no button of its own are
+# folded into the nearest one that has: nutrition is swallowed (PO), and
+# supplies such as condoms and vaseline are applied externally.
+CATEGORIES = [
+    # const name,  code,   prefixes,                 label,                      continuous, routes
+    ('ORAL',       'DORA', ('DORA', 'NFOS'),         'oral',                     False, ('PO',)),
+    ('INJECTABLE', 'DINJ', ('DINJ',),                'injectable',               False, ('IV', 'SC', 'IM', 'IO')),
+    ('PERFUSION',  'DINF', ('DINF',),                'perfusion',                True,  ()),
+    ('EXTERNAL',   'DEXT', ('DEXT', 'DEXO', 'SMSU'), 'external',                 False, ('UNSPECIFIED', 'OC')),
+    ('VACCINE',    'DVAC', ('DVAC',),                'vaccines/immunoglobulins', False, ()),
+]
+
+# Routes the app offers, and the units it offers when a dose is edited by hand.
+# These are app-level choices, not per-item data, so they live here rather than
+# in the input file.
+ROUTES = ('UNSPECIFIED', 'PO', 'IV', 'SC', 'IM', 'IO', 'OC')
+DOSAGE_UNITS = ('TABLET', 'CAPSULE', 'G', 'MG', 'MCG', 'L', 'ML', 'IU',
+                'DROP', 'PUFF', 'AMPOULE', 'SACHET', 'OVULE', 'SUPP')
+DURATION_UNITS = ('HOUR', 'MINUTE', 'SECOND')
+
+BEGIN = '==== BEGIN GENERATED OUTPUT ===='
+END = '==== END GENERATED OUTPUT ===='
+
+errors = []
+
+
+def fail(row, message):
+    errors.append('line %s, %s: %s' % (row.get('_line', '?'), row.get('code', '?'), message))
+
+
+def category_of(code):
+    for entry in CATEGORIES:
+        if code.startswith(entry[2]):
+            return entry
+    return None
+
+
+def probe(directory):
+    """Reads what the models package next to a target actually supports.
+
+    The client and the omod each carry their own copy of these classes and they
+    have drifted: the omod's CatalogIndex has no withDurationUnits.
+    """
+    def read(name):
+        try:
+            return open(os.path.join(directory, name)).read()
+        except IOError:
+            return ''
+    return {
+        'units': set(re.findall(r'\bUnit ([A-Z][A-Z_]*)\s*=', read('Unit.java'))) or None,
+        'duration': 'withDurationUnits' in read('CatalogIndex.java'),
+    }
+
+
+def read_rows(filename):
+    with open(filename, newline='', encoding='utf-8-sig') as file:
+        for line, row in enumerate(csv.DictReader(file), start=2):
+            row = {k: (v or '').strip() for k, v in row.items() if k}
+            if not row.get('code'):
+                continue
+            row['_line'] = line
+            yield row
+
+
+def main(filename, targets):
+    rows = list(read_rows(filename))
+    if not rows:
+        raise SystemExit('%s contains no items' % filename)
+
+    if targets:
+        features = {t: probe(os.path.dirname(os.path.abspath(t))) for t in targets}
+    else:
+        features = {None: {'units': None, 'duration': True}}
+
+    seen = {}
+    for row in rows:
+        code = row['code']
+        if code in seen:
+            fail(row, 'duplicate of line %d' % seen[code]['_line'])
+        seen[code] = row
+        if not category_of(code):
+            fail(row, 'no category for prefix %r; add one to CATEGORIES' % code[:4])
+        if not row.get('desc_en'):
+            fail(row, 'desc_en is empty')
+        for target, feature in features.items():
+            units = feature['units']
+            if row.get('unit') in (None, '', 'null') or not units:
+                continue
+            if row['unit'] not in units:
+                near = difflib.get_close_matches(row['unit'], sorted(units), n=1)
+                fail(row, 'Unit.%s does not exist in %s%s' % (
+                    row['unit'], target, near and ' (did you mean %s?)' % near[0] or ''))
+    if errors:
+        raise SystemExit('%d problem(s):\n  %s' % (len(errors), '\n  '.join(errors)))
+
+    # Group into drugs by the 8-character prefix that CatalogIndex.getDrug uses.
+    drugs = []
+    by_code = {}
+    for row in rows:
+        code = row['code'][:8]
+        if code not in by_code:
+            by_code[code] = {'code': code, 'rows': []}
+            drugs.append(by_code[code])
+        by_code[code]['rows'].append(row)
+
+    for drug in drugs:
+        resolve(drug)
+    if errors:
+        raise SystemExit('%d problem(s):\n  %s' % (len(errors), '\n  '.join(errors)))
+
+    for target, feature in features.items():
+        text = render(drugs, feature['duration'])
+        emitted = len(re.findall(r'new Format\(', text))
+        if emitted != len(rows):
+            raise SystemExit('internal error: %d items in, %d formats out'
+                             % (len(rows), emitted))
+        if target is None:
+            sys.stdout.write(text)
+        else:
+            splice(target, text)
+            print('%s: %d items, %d drugs%s' % (
+                target, len(rows), len(drugs),
+                '' if feature['duration'] else ' (no withDurationUnits here)'),
+                file=sys.stderr)
+
+
+def resolve(drug):
+    """Works out one drug name and each format description, or reports why not."""
+    rows = drug['rows']
+    for row in rows:
+        row['_en'] = normalize(caret(row, 'en'))
+        row['_fr'] = normalize(caret(row, 'fr'))
+
+    name_en = clean(get_drug_name([row['_en'] for row in rows]))
+    name_fr = clean(get_drug_name([row['_fr'] for row in rows]))
+    if not name_en:
+        fail(rows[0], 'cannot tell where the drug name ends in %s; add a "^" '
+                      'or set drug_en' % ' and '.join(repr(r['_en']) for r in rows))
+        return
+
+    # A name that ends mid-word means the split landed inside a token (MSF's
+    # own split_med is greedy and will eat "10 mg/m" out of "10 mg/ml").
+    for row, name in ((r, n) for n in (name_en,) for r in rows):
+        tail = row['_en'][len(name):]
+        if tail[:1].isalnum():
+            fail(row, 'drug name %r ends in the middle of %r; add a "^" '
+                      'to mark where it ends' % (name, row['_en']))
+            return
+
+    drug['name'] = pack_en_fr(name_en, name_fr)
+    drug['formats'] = []
+    for row in rows:
+        format_en = clean(row['_en'][len(name_en):].lstrip(' ^'))
+        format_fr = clean(row['_fr'][len(name_fr):].lstrip(' ^'))
+        if not format_en:
+            fail(row, 'format description came out empty; set format_en')
+        unit = row.get('unit') or guess_unit(row['_en'])
+        drug['formats'].append({
+            'code': row['code'].strip('-'),
+            'description': pack_en_fr(format_en, format_fr),
+            'unit': 'null' if unit == 'null' else 'Unit.%s' % unit,
+        })
+
+
+def caret(row, lang):
+    """Returns the description with a "^" marking the end of the drug name."""
+    desc = row.get('desc_' + lang, '')
+    name = row.get('drug_' + lang) or row.get('drug_en' if lang == 'fr' else '')
+    if '^' in desc or not name:
+        return desc
+    format = row.get('format_' + lang)
+    if not format:
+        # Remove the drug name's words from the description, as MSF's own
+        # "drug" adjustment does, and treat what is left as the format.
+        format = desc
+        for word in name.split():
+            if re.search(r'\w', word):
+                word = re.sub(r'^\W+|\W+$', '', word)
+                format = re.sub(r'\b' + re.escape(word) + r'\b', '', format, 1)
+    return name + ' ^ ' + format
+
+
+def render(drugs, duration_units=True):
+    out = ['    // %s\n' % BEGIN,
+           '    // Produced by executing: build_catalog %s\n\n' % ' '.join(sys.argv[1:])]
+    used = []
+    for const, code, prefixes, label, continuous, routes in CATEGORIES:
+        # Emitted even when empty: the dialog references every one by name.
+        members = [d for d in drugs if d['code'].startswith(prefixes)]
+        used.append(const)
+        args = ['"%s"' % code, '"%s"' % label, 'true' if continuous else 'false']
+        out.append('    Category %s = new Category(%s).withDrugs(\n'
+                   % (const, ', '.join(args + list(routes))))
+        out.append(',\n'.join(
+            '        new Drug("%s", "%s").withFormats(\n%s\n        )'
+            % (d['code'], d['name'],
+               ',\n'.join('            new Format("%s", "%s", %s)'
+                          % (f['code'], f['description'], f['unit'])
+                          for f in d['formats']))
+            for d in members))
+        out.append('\n    );\n\n')
+
+    out.append('    CatalogIndex INDEX = new CatalogIndex(%s)\n' % ', '.join(used))
+    out.append('        .withRoutes(%s)\n' % ', '.join(ROUTES))
+    out.append('        .withDosageUnits(%s)\n'
+               % ', '.join('Unit.%s' % u for u in DOSAGE_UNITS))
+    if duration_units:
+        out.append('        .withDurationUnits(%s);\n\n'
+                   % ', '.join('Unit.%s' % u for u in DURATION_UNITS))
+    else:
+        out[-1] = out[-1].rstrip('\n') + ';\n\n'  
+    out.append('    // %s\n' % END)
+    return ''.join(out)
+
+
+def splice(target, text):
+    with open(target) as file:
+        template = file.read()
+    if BEGIN not in template or END not in template:
+        raise SystemExit('Markers %r and %r not found in %s' % (BEGIN, END, target))
+    prologue = re.sub(r'.*$', '', template.split(BEGIN, 1)[0])
+    epilogue = re.sub(r'^.*\n', '', template.rsplit(END, 1)[1])
+    if 'CatalogIndex INDEX' in prologue + epilogue:
+        raise SystemExit(
+            '%s declares CatalogIndex INDEX outside the generated block.\n'
+            'This tool generates that declaration, so delete the hand-written '
+            'one (move the %r marker below it) and run again.' % (target, END))
+    with open(target, 'w') as file:
+        file.write(prologue + text + epilogue)
+
+
+# The text handling below is carried over from get_meds unchanged, so that items
+# already in the catalogue render exactly as they do today.
+
+def pack_en_fr(en_text, fr_text):
+    return '%s [fr:%s]' % (en_text, fr_text) if fr_text.strip() else en_text
+
+
+def get_drug_name(descs):
+    if len(descs) == 0:
+        return ''
+    if len(descs) == 1:
+        return split_med(descs[0])[0]
+    words = [desc.split() for desc in descs]
+    sets = [set(group) for group in zip(*words)]
+    w = 0
+    while w < len(sets) - 1 and len(sets[w]) == 1:
+        word = list(sets[w])[0]
+        if '^' in word:
+            break
+        if re.match(r'^[0-9.% ]+$', word):
+            break
+        w += 1
+    result = ' '.join(set.pop() for set in sets[:w])
+    return re.sub(r',* *[eé]q\..*$', '', result)
+
+
+def split_med(med):
+    if '^' in med:
+        return med.split('^', 1)
+    m = re.match(r'(.*), *(([eé]q[\. ]*)\d.*)', med)
+    if m:
+        return m.group(1), m.group(2).lstrip(', ')
+    m = re.match(r'([A-Za-z ]+) ([0-9.%]+ .*)', med)
+    if m:
+        return m.group(1), m.group(2).lstrip(', ')
+    m = re.match(r'([^,]+), *(.*)', med)
+    if m:
+        return m.group(1), m.group(2).lstrip(', ')
+    return med, ''
+
+
+def normalize(desc):
+    for search, replace in [
+        (r'([a-zA-Z])\.', r'\1. '),  # period after a letter is a word break
+        (r'(\d),(\d)', r'\1.\2'),  # turn commas into decimal points
+        (r'(\d)(g|mg|µg|l|ml|IU|UI)\b', r'\1 \2'),  # space before any unit
+        (r'(\d)x(\d)', r'\1 x \2'),  # spaces around x as multiplication sign
+        (r'\bx(\d)', r'x \1'),  # spaces around x as multiplication sign
+        (r'(\d)x\b', r'\1 x'),  # spaces around x as multiplication sign
+        (r'(\d) *%', r'\1%'),  # no spaces between number and percent sign
+        (r'%', '% '),  # end of a percentage is a word break
+        (r'[ ,]000', '000'),  # remove thousands separators
+        (r'[ ,]*/[ ,]*', ' / '),  # one space before and after any slash
+        (r'(\d) / (\d)', r'\1/\2'),  # no spaces around slash for fractions
+        (r',( *,)*', ','),  # collapse multiple commas to single comma
+        (r' *, *', ' , '),  # one space before and after any comma
+        (r'\s+', ' '),  # collapse whitespace to single space
+        (r'^[ ,]*|[ ,]*$', ''),  # remove leading/trailing spaces/commas
+    ]:
+        desc = re.sub(search, replace, desc)
+    return desc
+
+
+def clean(desc):
+    for search, replace in [
+        (r'[ ,]*/[ ,]*', ' / '),  # one space before and after any slash
+        (r'(\d) / (\d)', r'\1/\2'),  # no spaces around slash for fractions
+        (r',( *,)*', ','),  # collapse multiple commas to single comma
+        (r' *, *', ', '),  # no space before and one space after any comma
+        (r'\s+', ' '),  # collapse whitespace to single space
+        (r'^[ ,]*|[ ,]*$', ''),  # remove leading/trailing spaces/commas
+    ]:
+        desc = re.sub(search, replace, desc)
+    return desc
+
+
+def guess_unit(desc):
+    if re.findall(r'\btab\.?\b', desc):
+        return 'TABLET'
+    if re.findall(r'\bcaps?\.?\b', desc):
+        return 'CAPSULE'
+    if re.findall(r'/ *puff\b', desc):
+        return 'PUFF'
+    if re.findall(r' *[0-9.]+ *m?l\b', desc) or re.findall(r'\d%', desc):
+        return 'ML'
+    return 'MG'
+
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        raise SystemExit(__doc__.strip())
+    main(sys.argv[1], sys.argv[2:])
