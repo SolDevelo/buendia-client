@@ -150,9 +150,16 @@ public class UpdateManager {
     public boolean startDownload(AvailableUpdateInfo availableUpdateInfo) {
         // TODO(ping): 2019-09-18 - For some reason, this starts the
         // download but Android never reports completion.
-        // So, for now, send the user to the /client webpage instead.
+        // So, for now, send the user to the package server's install page instead.
+        //
+        // That page used to be addressed as http://<server>/client, which was a page the
+        // Edison appliance served on port 80. This deployment has nothing on port 80 at all,
+        // so the banner opened a browser on a URL that could not load and the only way to
+        // update was to know about :9001 already. getPackageServerUrl() is the same address
+        // the QR code on the in-zone card encodes, and the page it opens has the install
+        // button on it.
         if (2 > 1) {
-            Uri uri = Uri.parse("http://" + mSettings.getServer() + "/client");
+            Uri uri = Uri.parse(mSettings.getPackageServerUrl("/"));
             mApplication.startActivity(new Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             return true;
         }
