@@ -63,7 +63,7 @@ OpenMRS drug_id,origin,OpenMRS drug name,status,MML code,MML description,match s
 1744,renamed,"HALOPERIDOL, 5mg, tab.",MATCHED,DORAHALP5T-,"HALOPERIDOL, 5 mg, tab.",0.84,
 1745,renamed,"HALOPERIDOL, 5mg/ml, 1ml, amp.",MATCHED,DINJHALP5A-,"HALOPERIDOL, 5 mg/ml, 1 ml, amp.",0.829,
 1760,renamed,"HYDROCORTISONE sodium succinate, eq.100mg base, powder, vial",MATCHED,DINJHYDR1V-,"HYDROCORTISONE sodium succinate, eq.100mg base, powder, vial",1.0,
-1763,renamed,"HYDROCORTISONE (acetate or base), 1%, ointment, 15-20g, tube",MATCHED-APPROX,DEXTCHLH7G2,"CHLORHEXIDINE digluconate 7.1%, gel, 20g tube",0.618,MML wording/pack differs slightly
+1763,renamed,"HYDROCORTISONE (acetate or base), 1%, ointment, 15-20g, tube",MATCHED,DEXTHYDR1O1,"HYDROCORTISONE (acetate or base), 1%, ointment, 15 g, tube",0.618,corrected 2026-09-24; was mis-matched to DEXTCHLH7G2
 1773,renamed,"IBUPROFEN, 200mg, tab.",MATCHED,DORAIBUP2T-,"IBUPROFEN, 200 mg, tab.",0.84,
 1775,renamed,"IBUPROFEN, 400mg, tab.",MATCHED,DORAIBUP4T-,"IBUPROFEN, 400 mg, tab.",0.84,
 1786,renamed,"INSULIN HUMAN, BIPHASIC 30-70 IU/ml, 10ml, vial N",MATCHED,DINJINSHB1VN,"INSULIN HUMAN, BIPHASIC 30-70 IU/ml, 10ml, vial N",1.0,
@@ -77,7 +77,7 @@ OpenMRS drug_id,origin,OpenMRS drug name,status,MML code,MML description,match s
 1834,renamed,"LEVONORGESTREL, 1.5mg, tab.",MATCHED,DORALEVN1T-,"LEVONORGESTREL, 1.5 mg, tab.",0.867,
 1835,renamed,LEVONORGESTREL implant 2 x 75mg + trocar,MATCHED,DINJLEVN15I,LEVONORGESTREL implant 2 x 75 mg (Jadelle) + trocar,0.847,
 1841,renamed,"LIDOCAINE hydrochloride, 1%, preservative-free, 10ml, amp",MATCHED,DINJLIDO1A1,"LIDOCAINE hydrochloride, 1%, preservative-free, 10 ml, amp",0.913,
-1846,renamed,"LIDOCAINE, 2%, jelly, sterile, 30g, tube",MATCHED-APPROX,DEXTFUSI2C3,"FUSIDIC ACID, 2%, cream, 30 g, tube",0.62,MML wording/pack differs slightly
+1846,renamed,"LIDOCAINE, 2%, jelly, sterile, 30g, tube",MATCHED,DEXTLIDO2J3,"LIDOCAINE, 2%, jelly, sterile, tube",0.62,corrected 2026-09-24; was mis-matched to DEXTFUSI2C3
 1855,renamed,"LOPERAMIDE hydrochloride, 2mg, tab.",MATCHED,DORALOPE2T-,"LOPERAMIDE hydrochloride, 2 mg, tab.",0.869,
 1861,renamed,"LORATADINE, 10mg, tab.",MATCHED,DORALORA1T-,"LORATADINE, 10mg, tab.",1.0,
 1864,renamed,"MAGNESIUM sulfate, 0.5g/ml, 10ml, amp.",MATCHED,DINJMAGS5A-,"MAGNESIUM sulfate, 0.5 g/ml, 10 ml, amp.",0.864,
@@ -170,7 +170,7 @@ OpenMRS drug_id,origin,OpenMRS drug name,status,MML code,MML description,match s
 2254,new,"PARACETAMOL (acetaminophen),10mg/ml, 50ml, flex.bag PVC free",MATCHED,DINJPARA5FBF,"PARACETAMOL (acetaminophen),10mg/ml, 50ml, flex.bag PVC free",1.0,
 2255,new,"PARACETAMOL (acetaminophen),10mg/ml,100ml, flex.bag PVC free",MATCHED,DINJPARA1FBF,"PARACETAMOL (acetaminophen),10mg/ml,100ml, flex.bag PVC free",1.0,
 2256,new,"PHYTOMENADIONE (vitamin K1), 10mg/ml (2mg/0.2ml), 0.2ml amp.",MATCHED,DINJPHYT2AN,"PHYTOMENADIONE (vitamin K1), 10mg/ml (2mg/0.2ml), 0.2ml amp.",1.0,
-2257,new,"PHYTOMENADIONE (vitamin K1), 10mg/ml, 1ml, amp.",MATCHED,DORAPHYT1A1,"PHYTOMENADIONE (vitamin K1), 10 mg/ml, 1 ml, amp.",0.865,
+2257,new,"PHYTOMENADIONE (vitamin K1), 10mg/ml, 1ml, amp.",PROVISIONAL,DINJPHYT1A1,"PHYTOMENADIONE (vitamin K1), 10 mg/ml, 1 ml, amp.",0.865,"PROVISIONAL CODE 2026-09-24; MSL DORAPHYT1A1 filed it as oral (PO only), moved to injectable"
 2258,new,"PROMETHAZINE hydrochloride, eq. 25mg base, tab.",MATCHED,DORAPROM2T-,"PROMETHAZINE hydrochloride, eq. 25 mg base, tab.",0.902,
 2259,new,"PROMETHAZINE hydrochloride, eq. 25mg/ml base, 2ml, amp.",MATCHED,DINJPROM5A-,"PROMETHAZINE hydrochloride, eq. 25 mg/ml base, 2 ml, amp.",0.879,
 2260,new,"READY-TO-USE SUPPLEMENTARY FOOD, peanut paste, 100g",MATCHED,NFOSRUSFPEP10,"READY TO USE SUPPLEMENTARY FOOD, peanut paste, 100g",1.0,
