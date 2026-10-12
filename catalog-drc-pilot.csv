@@ -194,3 +194,16 @@ DEXOOTET5O5,"OXYTETRACYCLINE hydrochloride, 0.5%, eye ointment, ster., 4-5g, tub
 DORAAZIT3S1,"AZITHROMYCIN, 200mg/5ml, powder oral susp., 15ml, bot.","AZITHROMYCINE, 200mg/5ml, poudre susp. orale, 15ml, fl.",,,,,,OpenMRS drugId 2218 (missing-from-mml)
 DINJPOTC2A-,"POTASSIUM chloride, 2mmol/ml (15%), 10ml, amp.","POTASSIUM chlorure, 2mmol/ml (15%), 10ml, amp.",,,,,,OpenMRS drugId 2035 (missing-from-mml)
 DORAPOTC1S-,"POTASSIUM chloride, 100mg/ml (1.33mEq/ml), oral sol., 500ml, bot.","POTASSIUM chlorure, 100mg/ml (1,33mEq/ml), sol. orale, 500ml, fl.",,,,,,OpenMRS drugId 2036 (missing-from-mml)
+DINJAMOC1V2,"AMOXICILLIN / CLAVULANIC acid ^ 1g / 200mg, powder","AMOXICILLINE / acide CLAVULANIQUE ^ 1g / 200mg, poudre",,,,,MG,added 2026-10-12 (MSF request); MSL code
+DINJAMPI1V-,"AMPICILLIN, 1g, powder, vial","AMPICILLINE, 1 g, poudre, fl.",,,,,MG,added 2026-10-12 (MSF request); MSL code
+DINJAMPI5V-,"AMPICILLIN, 500mg, powder, vial","AMPICILLINE, 500 mg, poudre, fl.",,,,,MG,added 2026-10-12 (MSF request); MSL code
+DEXTANTH1O2,"ANTIHAEMORROID, ointment, 20-30g, tube","ANTI HEMORROIDAIRE, pommade, 20-30g, tube",,,,,G,"added 2026-10-12 (MSF request); MSL code (MSL wording: 25 g)"
+DEXTMOSQ1C-,"ANTIPRURITIC CREAM/GEL, after mosquito bites, tube","CREME/GEL ANTIPRURIGINEUX, après piqûres de moustiques, tube",,,,,G,"added 2026-10-12 (MSF request); MSL code (MSL wording: CREAM)"
+DINJARTS6V-,"ARTESUNATE ^ 60mg, powder,vial +NaHCO3  5% 1ml +NaCl 0.9% 5ml","ARTESUNATE ^ 60mg, poudre, fl +NaHCO3  5% 1ml +NaCl 0.9% 5ml",,,,,MG,added 2026-10-12 (MSF request); MSL code
+DINJARTS6VA,"ARTESUNATE ^ 60mg, pwd vial + ARGININE 2%/NaHCO3 0.84% 3ml amp","ARTESUNATE ^ 60mg, pdre fl. + ARGININE 2%/NaHCO3 0,84% 3ml amp.",,,,,MG,"added 2026-10-12 (MSF request); not in our MSL copy, provisional code"
+DORAERYT5T-,"ERYTHROMYCIN stearate, eq. 500mg base, tab.","ERYTHROMYCINE stéarate, éq. 500 mg base, comp.",,,,,,added 2026-10-12 (MSF request); MSL code
+NFOSINFO1AO80,"INFANT FORMULA, 1st age, powder, 800-900g","FORMULE INFANTILE, 1er âge, poudre, 800-900g",,,,,ML,"added 2026-10-12 (MSF request); MSL has 800 g (NFOSINFO1AO80) and 900 g (NFOSINFO1AO90) apart, 800 g code used"
+NFOSINFOH1-,"INFANT FORMULA, HYPOALLERGENIC, 1st age, powder, 400g","FORMULE INFANTILE, HYPOALLERGENIQUE, 1er âge, poudre, 400g",,,,,ML,added 2026-10-12 (MSF request); MSL code
+DORAMULT1T-,"MULTIVITAMINS, tab.","MULTIVITAMINES, comp.",,,,,,added 2026-10-12 (MSF request); MSL code
+DINFRINL1FBF1,"RINGER lactate, 1l, flex. bag, PVC free","RINGER lactate, 1 l, poche souple, sans PVC",,,,,,added 2026-10-12 (MSF request); MSL code
+DINFRINL1FBF5,"RINGER lactate, 500 ml, flex. bag, PVC free","RINGER lactate, 500 ml, poche souple, sans PVC",,,,,,added 2026-10-12 (MSF request); MSL code
