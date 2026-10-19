@@ -19,6 +19,7 @@ import com.google.common.base.Joiner;
 import org.joda.time.DateTime;
 import org.projectbuendia.client.App;
 import org.projectbuendia.client.json.Datatype;
+import org.projectbuendia.models.AdmissionObs;
 import org.projectbuendia.models.Chart;
 import org.projectbuendia.models.ChartItem;
 import org.projectbuendia.models.ChartSection;
@@ -175,12 +176,16 @@ public class ChartDataHelper {
         ConceptService concepts = App.getConceptService();
         Locale locale = App.getSettings().getLocale();
         Map<String, Obs> result = new HashMap<>();
-        for (Obs obs : getObservations(patientUuid, locale)) {
+        List<Obs> observations = getObservations(patientUuid, locale);
+        for (Obs obs : observations) {
             Obs existing = result.get(obs.conceptUuid);
             if (existing == null || obs.time.isAfter(existing.time)) {
                 result.put(obs.conceptUuid, obs);
             }
         }
+        // The Admission form's date counts, not the one stamped at registration.
+        Obs admission = AdmissionObs.choose(observations);
+        if (admission != null) result.put(ConceptUuids.ADMISSION_DATETIME_UUID, admission);
         return result;
     }
 

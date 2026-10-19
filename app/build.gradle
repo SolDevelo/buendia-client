@@ -73,6 +73,7 @@ dependencies {
     implementation 'com.google.android:flexbox:1.0.0' // Flexbox layout
 
     // Testing
+    testImplementation 'junit:junit:4.12' // JVM unit tests (app/src/test), no device needed
     androidTestImplementation 'com.android.support.test:runner:0.3'
     // Espresso
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:2.2'
