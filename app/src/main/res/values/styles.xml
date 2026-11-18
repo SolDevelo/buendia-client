@@ -253,6 +253,10 @@
   <style name="text.medium.white">
     <item name="android:textColor">@android:color/white</item>
   </style>
+  <!-- Toast text: black on the light box drawn by drawable/toast_bg. -->
+  <style name="text.large.toast">
+    <item name="android:textColor">@android:color/black</item>
+  </style>
 
   <!-- Huge: primary information, e.g. patient counts, important values. -->
   <style name="text.huge">

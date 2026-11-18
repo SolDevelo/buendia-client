@@ -12,7 +12,8 @@
 package org.projectbuendia.client.ui;
 
 import android.content.Context;
-import android.widget.LinearLayout;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,9 +28,19 @@ public final class BigToast {
     private static void pop(String message, int length) {
         Context context = App.getContext();
         Toast toast = Toast.makeText(context, message, length);
-        LinearLayout layout = (LinearLayout) toast.getView();
-        TextView view = (TextView) layout.getChildAt(0);
-        view.setTextAppearance(context, R.style.text_large_white);
+        // Our own box and text colours, because the system's toast box is dark on
+        // some Android versions and light on others (light from Android 9 on).
+        View layout = toast.getView();
+        layout.setBackgroundResource(R.drawable.toast_bg);
+        TextView view = (TextView) layout.findViewById(android.R.id.message);
+        if (view != null) {
+            view.setTextAppearance(context, R.style.text_large_toast);
+            view.setShadowLayer(0, 0, 0, 0);
+            ViewGroup.LayoutParams params = view.getLayoutParams();
+            if (params instanceof ViewGroup.MarginLayoutParams) {
+                ((ViewGroup.MarginLayoutParams) params).setMargins(0, 0, 0, 0);
+            }
+        }
         toast.show();
     }
 
