@@ -48,6 +48,7 @@ import org.projectbuendia.models.ChartItem;
 import org.projectbuendia.models.ChartSection;
 import org.projectbuendia.models.ConceptUuids;
 import org.projectbuendia.models.Encounter;
+import org.projectbuendia.models.FormPrefill;
 import org.projectbuendia.models.Obs;
 import org.projectbuendia.models.ObsValue;
 import org.projectbuendia.models.Order;
@@ -308,6 +309,7 @@ public final class PatientChartController implements ChartRenderer.JsInterface {
         if (ConceptUuids.isYes(observations.get(ConceptUuids.IV_UUID))) {
             preset.ivAccess = Preset.YES;
         }
+        preset.conceptDates.putAll(FormPrefill.dates(observations));
         preset.targetGroup = targetGroup;
 
         mFormPending = true;

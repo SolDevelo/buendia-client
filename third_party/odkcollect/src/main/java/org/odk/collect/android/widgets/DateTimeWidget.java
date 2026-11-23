@@ -261,6 +261,9 @@ public class DateTimeWidget extends QuestionWidget {
                 mDateListener);
         mTimePicker.setCurrentHour(typedAnswer.getHourOfDay());
         mTimePicker.setCurrentMinute(typedAnswer.getMinuteOfHour());
+        // The time listener sets this only when hour or minute differ from now's;
+        // without it getAnswer() would replace a forced value with the current time.
+        changed = true;
 
         return true;
     }

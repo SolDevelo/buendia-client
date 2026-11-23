@@ -41,6 +41,7 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.instance.TreeReference;
 import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryPrompt;
+import org.joda.time.DateTime;
 import org.odk.collect.android.R;
 import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
@@ -87,11 +88,16 @@ public class ODKView extends LinearLayout {
 
     public ODKView(Context context, final FormEntryPrompt[] questionPrompts,
             FormEntryCaption[] groups, boolean advancingPage) {
-        this(context, questionPrompts, groups, advancingPage, null /*fields*/);
+        this(context, questionPrompts, groups, advancingPage, null /*fields*/, null /*conceptCodes*/);
     }
 
+    /**
+     * @param conceptCodes the concept code of each prompt's question (its openmrs_concept
+     *                     attribute), parallel to questionPrompts; null entries for none
+     */
     public ODKView(Context context, final FormEntryPrompt[] questionPrompts,
-                   FormEntryCaption[] groups, boolean advancingPage, Preset preset) {
+                   FormEntryCaption[] groups, boolean advancingPage, Preset preset,
+                   String[] conceptCodes) {
         super(context);
 
         mWidgets = new ArrayList<QuestionWidget>();
@@ -218,7 +224,10 @@ public class ODKView extends LinearLayout {
 
         boolean first = true;
         int id = 0;
+        int index = 0;
         for (FormEntryPrompt p : questionPrompts) {
+            String conceptCode = conceptCodes != null ? conceptCodes[index] : null;
+            index++;
             if (!first) {
 
                 View divider = new View(getContext());
@@ -243,6 +252,14 @@ public class ODKView extends LinearLayout {
             qw.setId(VIEW_ID + id++);
 
             mWidgets.add(qw);
+
+            // Date questions preset by concept code open on the preset value;
+            // a value already in the form is kept.
+            Long presetMillis = preset != null && conceptCode != null
+                    ? preset.conceptDates.get(conceptCode) : null;
+            if (presetMillis != null && p.getAnswerValue() == null) {
+                qw.forceSetAnswer(new DateTime(presetMillis));
+            }
 
             // The encounter properties (encounter_datetime, location_id, and
             // provider_id) are special.  We preset them according to the values

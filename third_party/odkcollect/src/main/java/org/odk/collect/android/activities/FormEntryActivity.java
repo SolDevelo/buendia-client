@@ -1247,6 +1247,18 @@ public class FormEntryActivity
 		return null;
 	}
 
+	/** Returns the concept code of each prompt's question element (the parent of its value node), or null. */
+	private static String[] getConceptCodes(FormInstance formInstance, FormEntryPrompt[] prompts) {
+		String[] codes = new String[prompts.length];
+		for (int i = 0; i < prompts.length; i++) {
+			TreeReference parent = prompts[i].getIndex().getReference().getParentRef();
+			TreeElement question = parent != null ? formInstance.resolveReference(parent) : null;
+			codes[i] = question != null
+					? Preset.conceptCode(question.getAttributeValue(null, "openmrs_concept")) : null;
+		}
+		return codes;
+	}
+
 	/**
 	 * Creates a view given the View type and an event
 	 *
@@ -1483,7 +1495,8 @@ public class FormEntryActivity
 				TreeReference ref = formController.getFormIndex().getReference();
 				TreeElement element = formInstance.resolveReference(ref);
 
-				odkv = new ODKView(this, prompts, groups, advancingPage, preset);
+				odkv = new ODKView(this, prompts, groups, advancingPage, preset,
+						getConceptCodes(formInstance, prompts));
                 if (preset != null
                         && preset.targetGroup != null
                         && preset.targetGroup.equals(groups[groups.length - 1].getLongText())) {

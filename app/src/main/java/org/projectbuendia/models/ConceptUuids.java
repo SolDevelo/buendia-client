@@ -33,6 +33,9 @@ public class ConceptUuids {
     // Date used for calculating "Day 1", "Day 2", etc. table headings.
     public static final String ADMISSION_DATETIME_UUID = toUuid(8001640);
 
+    // Date of onset of symptoms.  It and the admission date open pre-filled in forms (FormPrefill).
+    public static final String SYMPTOM_ONSET_DATE_UUID = toUuid(6001730);
+
     // Concepts whose values are prefilled in forms.
     public static final String PREGNANCY_UUID = toUuid(2005272);
     public static final String IV_UUID = toUuid(2900012);

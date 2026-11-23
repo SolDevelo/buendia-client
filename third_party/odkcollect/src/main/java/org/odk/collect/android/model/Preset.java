@@ -6,6 +6,9 @@ import android.os.Parcelable;
 import org.joda.time.DateTime;
 import org.odk.collect.android.utilities.Parcels;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** A Parcelable data object that specifies preset values for certain form fields. */
 public class Preset implements Parcelable {
 
@@ -20,6 +23,9 @@ public class Preset implements Parcelable {
     public int pregnancy = UNSPECIFIED;
     public int ivAccess = UNSPECIFIED;
     public String targetGroup;  // text of a section heading in the form to scroll to
+    // Values for date and datetime questions, keyed by the concept code of the question's
+    // openmrs_concept attribute ("8001640" in "8001640^Label^99DCT"), as epoch millis.
+    public HashMap<String, Long> conceptDates = new HashMap<>();
 
     public Preset() {}
 
@@ -30,6 +36,18 @@ public class Preset implements Parcelable {
         pregnancy = in.readInt();
         ivAccess = in.readInt();
         targetGroup = Parcels.readNullableString(in);
+        int n = in.readInt();
+        for (int i = 0; i < n; i++) {
+            String code = in.readString();
+            conceptDates.put(code, in.readLong());
+        }
+    }
+
+    /** Returns the concept code of an openmrs_concept attribute ("8001640^Label^99DCT" → "8001640"), or null. */
+    public static String conceptCode(String encoded) {
+        if (encoded == null) return null;
+        int caret = encoded.indexOf('^');
+        return caret > 0 ? encoded.substring(0, caret) : null;
     }
 
     @Override
@@ -45,6 +63,11 @@ public class Preset implements Parcelable {
         dest.writeInt(pregnancy);
         dest.writeInt(ivAccess);
         Parcels.writeNullableString(dest, targetGroup);
+        dest.writeInt(conceptDates.size());
+        for (Map.Entry<String, Long> entry : conceptDates.entrySet()) {
+            dest.writeString(entry.getKey());
+            dest.writeLong(entry.getValue());
+        }
     }
 
     @SuppressWarnings("unused")

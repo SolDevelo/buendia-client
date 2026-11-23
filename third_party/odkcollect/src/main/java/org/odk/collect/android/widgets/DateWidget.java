@@ -214,6 +214,17 @@ public class DateWidget extends QuestionWidget {
     }
 
 
+    @Override
+    public boolean forceSetAnswer(Object answer) {
+        if (!(answer instanceof DateTime)) {
+            return false;
+        }
+        DateTime date = (DateTime) answer;
+        mDatePicker.init(date.getYear(), date.getMonthOfYear() - 1, date.getDayOfMonth(),
+            mDateListener);
+        return true;
+    }
+
     /**
      * Resets date to today.
      */
