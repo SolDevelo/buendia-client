@@ -21,6 +21,6 @@
         android:id="@+id/user"
         android:showAsAction="always"
         android:title=""
-        android:actionLayout="@layout/action_bar_user_menu_button" />
+        android:actionLayout="@layout/user_badge" />
 
 </menu>

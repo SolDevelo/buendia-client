@@ -179,6 +179,12 @@ public class OdkActivityLauncher {
         if (preset != null) {
             intent.putExtra("fields", preset);
         }
+        // The form library cannot reach UserManager, so it gets the user's name and colour here.
+        JsonUser user = App.getUserManager().getActiveUser();
+        if (user != null) {
+            intent.putExtra(FormEntryActivity.EXTRA_USER_NAME, user.getLocalizedName());
+            intent.putExtra(FormEntryActivity.EXTRA_USER_COLOR, App.getUserManager().getColor(user));
+        }
         callingActivity.startActivityForResult(intent, requestCode);
     }
 

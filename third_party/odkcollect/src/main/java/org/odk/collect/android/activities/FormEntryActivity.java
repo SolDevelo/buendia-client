@@ -168,6 +168,12 @@ public class FormEntryActivity
 	// Tracks whether we are autosaving
 	public static final String KEY_AUTO_SAVED = "autosaved";
 
+	// The signed-in user, passed in by the app's launcher (this library cannot reach the app's
+	// UserManager) and shown as a badge in the action bar.
+	public static final String EXTRA_USER_NAME = "user_name";
+	public static final String EXTRA_USER_COLOR = "user_color";
+	private static final int MENU_USER = Menu.FIRST;
+
 //	private static final int MENU_LANGUAGES = Menu.FIRST;
 //	private static final int MENU_HIERARCHY_VIEW = Menu.FIRST + 1;
 //    private static final int MENU_CANCEL = Menu.FIRST;
@@ -976,6 +982,17 @@ public class FormEntryActivity
 		Collect.getInstance().getActivityLogger()
 				.logInstanceAction(this, "onCreateOptionsMenu", "show");
 		super.onCreateOptionsMenu(menu);
+
+		String userName = getIntent().getStringExtra(EXTRA_USER_NAME);
+		if (userName != null) {
+			MenuItem user = menu.add(Menu.NONE, MENU_USER, 0, userName);
+			user.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+			// The int overload inflates against a parent, so the badge keeps its 40sp height.
+			user.setActionView(R.layout.user_badge);
+			TextView badge = user.getActionView().findViewById(R.id.user_badge);
+			badge.setText(userName);
+			badge.setBackgroundColor(getIntent().getIntExtra(EXTRA_USER_COLOR, 0xff666666));
+		}
 
 //        CompatibilityUtils.setShowAsAction(
 //                menu.add(0, MENU_CANCEL, 0, R.string.cancel),

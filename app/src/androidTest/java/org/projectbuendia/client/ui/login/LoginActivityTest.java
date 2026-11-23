@@ -60,8 +60,10 @@ public class LoginActivityTest extends FunctionalTestCase {
         // Should be logged in
         screenshot("After User Selected");
 
-        click(viewWithText("TT"));
-        expectVisible(viewWithText(fullName));
+        // The action bar badge shows the full name; tapping it opens the user menu.
+        expectVisible(viewThat(hasId(R.id.user_badge), hasText(fullName)));
+        click(viewWithId(R.id.user_badge));
+        expectVisible(viewThat(hasId(R.id.user_name), hasText(fullName)));
         screenshot("After User Selected in Action Bar");
     }
 

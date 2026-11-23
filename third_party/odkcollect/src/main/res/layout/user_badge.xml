@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Action-bar badge naming the signed-in user, in the user's colour. Used as the action layout of
+    the app's user menu item (menu/base.xml) and of the form screen's user item (FormEntryActivity),
+    so it lives in this library, which both can reach. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:background="?android:attr/selectableItemBackground"
+    android:orientation="vertical"
+    android:padding="8sp">
+
+  <TextView
+      android:id="@+id/user_badge"
+      android:layout_width="wrap_content"
+      android:layout_height="40sp"
+      android:minWidth="40sp"
+      android:maxWidth="232dp"
+      android:paddingLeft="11sp"
+      android:paddingRight="11sp"
+      android:background="#666666"
+      android:ellipsize="end"
+      android:fontFamily="sans-serif-medium"
+      android:gravity="center"
+      android:singleLine="true"
+      android:textColor="@android:color/white"
+      android:textSize="16sp"
+      tools:text="Gaëlle Mbuyi"/>
+
+</LinearLayout>

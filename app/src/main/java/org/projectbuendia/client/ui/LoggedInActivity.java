@@ -95,7 +95,7 @@ public abstract class LoggedInActivity extends BaseActivity {
 
         mUserMenu = new UserMenuPopup();
 
-        final View userView = mMenu.getItem(mMenu.size() - 1).getActionView();
+        final View userView = mMenu.findItem(R.id.user).getActionView();
         userView.setOnClickListener(view -> mUserMenu.showAsDropDown(userView));
 
         updateActiveUser();
@@ -124,12 +124,10 @@ public abstract class LoggedInActivity extends BaseActivity {
         }
         mLastActiveUser = user;
 
-        TextView initials = mMenu
-            .getItem(mMenu.size() - 1)
-            .getActionView()
-            .findViewById(R.id.user_initials);
-        initials.setBackgroundColor(App.getUserManager().getColor(user));
-        initials.setText(user.getLocalizedInitials());
+        // The full name, so the signed-in user is always visible.
+        TextView badge = mMenu.findItem(R.id.user).getActionView().findViewById(R.id.user_badge);
+        badge.setBackgroundColor(App.getUserManager().getColor(user));
+        badge.setText(user.getLocalizedName());
     }
 
     public void onEvent(ActiveUserUnsetEvent event) {
